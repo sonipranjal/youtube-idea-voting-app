@@ -1,0 +1,36 @@
+generator client {
+    provider = "prisma-client-js"
+}
+
+datasource db {
+    provider = "postgresql"
+    url      = env("DATABASE_URL")
+}
+
+model VideoIdea {
+    id          Int      @id @default(autoincrement())
+    name        String
+    description String
+    userId      String
+    votes       Vote[]
+    createdAt   DateTime @default(now())
+    updatedAt   DateTime @updatedAt
+
+    @@index([name])
+}
+
+model Vote {
+    id          Int        @id @default(autoincrement())
+    userId      String
+    VideoIdea   VideoIdea? @relation(fields: [videoIdeaId], references: [id])
+    isUpvote    Boolean    @default(true)
+    videoIdeaId Int?
+
+    @@unique([userId, videoIdeaId])
+}
+
+// flow of things
+// 1. user (id in localstorage) -> creates an idea
+// 2. upvote (send userId from localstorage, videoIdeaId) -> create an upvote
+// 3. downvote (send userId & videoIdeaId) -> we will update a record from the table
+// 4. fetch all ideas with votes & downvotes
